@@ -50,9 +50,9 @@ func (c *Client) Close() {
 	c.conn.Close()
 }
 
-func (c *Client) Send(messageType int, data []byte) error {
-	return c.WriteMessage(messageType, data)
-}
+// func (c *Client) Send(messageType int, data []byte) error {
+// 	return c.WriteMessage(messageType, data)
+// }
 
 func (c *Client) GetAuth() Auth {
 	return c.Auth

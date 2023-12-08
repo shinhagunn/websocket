@@ -9,6 +9,21 @@ import (
 	"github.com/shinhagunn/websocket/pkg/message"
 )
 
+func getTopic(scope, stream, typ string) string {
+	if scope == "private" {
+		return typ
+	}
+	return stream + "." + typ
+}
+
+func splitPrefixedTopic(prefixed string) (string, string) {
+	spl := strings.Split(prefixed, ".")
+	prefix := spl[0]
+	t := strings.TrimPrefix(prefixed, prefix+".")
+
+	return prefix, t
+}
+
 func responseMust(e error, r interface{}) string {
 	res, err := message.PackOutgoingResponse(e, r)
 	if err != nil {

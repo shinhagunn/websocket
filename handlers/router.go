@@ -40,12 +40,12 @@ func wsHandler(epoll *routing.Epoll) http.HandlerFunc {
 			return
 		}
 
-		conn.SetReadLimit(maxMessageSize)
-		conn.SetReadDeadline(time.Now().Add(pongWait))
-		conn.SetPongHandler(func(string) error {
-			conn.SetReadDeadline(time.Now().Add(pongWait))
-			return nil
-		})
+		// conn.SetReadLimit(maxMessageSize)
+		// conn.SetReadDeadline(time.Now().Add(pongWait))
+		// conn.SetPongHandler(func(string) error {
+		// 	conn.SetReadDeadline(time.Now().Add(pongWait))
+		// 	return nil
+		// })
 
 		auth := routing.Auth{
 			UID:  r.Header.Get("JwtUID"),

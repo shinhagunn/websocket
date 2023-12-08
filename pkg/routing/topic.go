@@ -1,17 +1,20 @@
 package routing
 
 import (
+	"encoding/json"
 	"log"
 
 	"github.com/shinhagunn/websocket/pkg/message"
 )
 
 type Topic struct {
+	send    chan<- SendMessager
 	clients map[*Client]struct{}
 }
 
-func NewTopic() *Topic {
+func NewTopic(send chan<- SendMessager) *Topic {
 	return &Topic{
+		send:    send,
 		clients: make(map[*Client]struct{}),
 	}
 }
@@ -38,33 +41,33 @@ func (t *Topic) len() int {
 	return len(t.clients)
 }
 
-// func (t *Topic) broadcast(message *Event) {
-// 	var bodyMsg interface{}
+func (t *Topic) broadcast(message *Event) {
+	var bodyMsg interface{}
 
-// 	if err := json.Unmarshal(message.Body, &bodyMsg); err != nil {
-// 		log.Errorf("Fail to JSON marshal: %s", err.Error())
-// 		return
-// 	}
+	if err := json.Unmarshal(message.Body, &bodyMsg); err != nil {
+		log.Printf("Fail to JSON marshal: %s\n", err.Error())
+		return
+	}
 
-// 	body, err := json.Marshal(map[string]interface{}{
-// 		message.Topic: bodyMsg,
-// 	})
+	body, err := json.Marshal(map[string]interface{}{
+		message.Topic: bodyMsg,
+	})
 
-// 	if err != nil {
-// 		log.Errorf("Fail to JSON marshal: %s", err.Error())
-// 		return
-// 	}
+	if err != nil {
+		log.Printf("Fail to JSON marshal: %s\n", err.Error())
+		return
+	}
 
-// 	for client := range t.clients {
-// 		client.Send(string(body))
-// 	}
-// }
+	for client := range t.clients {
+		t.send <- NewSendMessager(client, body)
+	}
+}
 
-// func (t *Topic) broadcastRaw(msg []byte) {
-// 	for client := range t.clients {
-// 		client.Send(string(msg))
-// 	}
-// }
+func (t *Topic) broadcastRaw(msg []byte) {
+	for client := range t.clients {
+		t.send <- NewSendMessager(client, msg)
+	}
+}
 
 func (t *Topic) subscribe(c *Client) bool {
 	if _, ok := t.clients[c]; ok {

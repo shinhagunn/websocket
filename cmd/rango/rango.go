@@ -10,6 +10,8 @@ import (
 	"github.com/shinhagunn/websocket/pkg/routing"
 )
 
+const numberOfWorker = 5
+
 func main() {
 	var rLimit syscall.Rlimit
 	if err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit); err != nil {
@@ -31,13 +33,16 @@ func main() {
 		panic(err)
 	}
 
-	epoll, err := routing.MkEpoll()
+	epoll, err := routing.NewEpoll(config)
 	if err != nil {
 		panic(err)
 	}
 
 	go epoll.Read()
-	go epoll.Write()
+
+	for i := 0; i < numberOfWorker; i++ {
+		go epoll.Write()
+	}
 
 	if err := handlers.SetupRoutes(config, epoll); err != nil {
 		panic(err)
